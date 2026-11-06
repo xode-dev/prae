@@ -1,0 +1,244 @@
+/* prae.gg shared styles. Every page links this file. */
+:root {
+  --bg: #121214;
+  --panel: rgba(24, 24, 28, 0.78);
+  --panel-hover: rgba(34, 34, 40, 0.9);
+  --border: rgba(216, 212, 196, 0.18);
+  --fg: #e7e7ec;
+  --muted: #8a8a96;
+  --accent: #d8d4c4;
+  --tile-w: 184px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg) url('background-inde.jpg') center / cover no-repeat fixed;
+  color: var(--fg);
+  font-family: "Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Section pages carry their own artwork. */
+body.page-warc {
+  background: var(--bg) url('../warc/background-warc.jpg') center / cover no-repeat fixed;
+}
+
+/* ---- Header: the PRAE wordmark alone (logo.png is 400x150) ---- */
+.brand {
+  --logo-h: clamp(6rem, 24vw, 11.75rem);
+  margin: auto auto 0;
+  padding: 2rem 1rem 0;
+  display: flex;
+  justify-content: center;
+}
+.brand.compact { --logo-h: clamp(3.5rem, 13vw, 5.25rem); margin-top: 0; }
+.brand h1 { margin: 0; line-height: 0; }
+.brand a { display: inline-block; line-height: 0; }
+.logo { display: block; height: var(--logo-h); width: auto; max-width: 100%; object-fit: contain; }
+
+/* ---- Landing layout: logo dead-centre, tiles in the bottom half ----
+   Three rows: equal top and bottom bands around the logo, so the logo
+   stays vertically centred whether or not tiles are present. */
+body.home {
+  display: grid;
+  grid-template-rows: 1fr auto 1fr;
+}
+/* Optically lifted 5% of the window above true centre. */
+body.home .brand { grid-row: 2; margin: 0 auto; padding: 0 1rem; transform: translateY(-5vh); }
+body.home .tiles { grid-row: 3; align-self: end; }
+
+/* ---- Service tiles: one row in the bottom band, as on the Arc landing ----
+   Add a tile by copying an <a class="tile"> block in index.html and giving
+   it an accent below. */
+.tiles {
+  --tiles-bottom: 10vh;
+  position: relative;
+  margin: auto auto var(--tiles-bottom);
+  padding: 3rem 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  row-gap: calc(var(--tile-w) / 2);
+}
+/* Each tile pads itself by a quarter of its width per side, so
+   neighbouring tiles sit half a tile apart. */
+.tiles .tile { margin-inline: calc(var(--tile-w) / 4); }
+/* A tile is a two-sided card: tile-default-<sec> on the front,
+   tile-hover-<sec> on the reverse. Hover or keyboard focus turns it over.
+   The tile itself is never transformed or positioned, so its note can
+   anchor to the whole row (see .tile-note). Lift, depth and glow all
+   live on the card. */
+.tile {
+  --tile-accent: var(--accent);
+  display: block;
+  width: var(--tile-w);
+  aspect-ratio: 1;
+  line-height: 0;
+  border-radius: 2px;
+}
+.tile-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+  transform: perspective(900px) rotateY(0deg);
+  transition: transform 520ms cubic-bezier(0.4, 0.2, 0.2, 1), box-shadow 180ms ease;
+}
+.tile-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+/* The reverse image, turned to face the back. */
+.tile-flip { transform: rotateY(180deg); }
+
+/* Optional hover note: centred under the tile that is hovered, at the
+   same height as a subpage's .caption (5vh above the window's bottom).
+   The tile row ends --tiles-bottom above the window's bottom, so the note
+   hangs that distance below the tile, less the caption's 5vh. */
+.tile { position: relative; }
+.tile-note {
+  position: absolute;
+  left: 50%;
+  bottom: calc(5vh - var(--tiles-bottom));
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+  line-height: normal;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.tile:hover .tile-note, .tile:focus-visible .tile-note { opacity: 0.9; }
+.tile:hover .tile-card, .tile:focus-visible .tile-card {
+  transform: perspective(900px) rotateY(180deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), 0 0 18px color-mix(in srgb, var(--tile-accent) 45%, transparent);
+}
+.tile:focus-visible { outline: 2px solid var(--tile-accent); outline-offset: 4px; }
+
+/* Per-service accents, taken from each tile's artwork. */
+.tile.warc { --tile-accent: #b0574a; }
+.tile.disc  { --tile-accent: #7b88a8; }
+.tile.etcx     { --tile-accent: #8a6fa0; }
+
+body.page-etcx {
+  background: var(--bg) url('../etcx/background-etcx.jpg') center / cover no-repeat fixed;
+}
+body.page-disc {
+  background: var(--bg) url('../disc/background-disc.jpg') center / cover no-repeat fixed;
+}
+
+/* ---- Back strip: the left side of a page is a link home ----
+   Invisible until hovered, then a soft shade and a faint chevron. */
+.back {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 1;
+  width: 30vw;
+  display: flex;
+  align-items: center;
+  padding-left: clamp(1rem, 3vw, 2rem);
+  color: var(--accent);
+  font-size: 2rem;
+  font-weight: 500;
+  text-decoration: none;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.35), transparent);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.back:hover, .back:focus-visible { opacity: 1; outline: none; }
+
+/* ---- Headline: a centred link framed |< ... /> as on xode.dev ----
+   The row sets the size; the brackets use Xode's monospace face. */
+.headline-row {
+  margin: auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: 0.4em;
+  font-size: clamp(1.4rem, 4.5vw, 3rem);
+  line-height: 1;
+}
+.bracket {
+  font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.bracket .pipe { color: #4a4a52; margin-right: 0.4em; animation: blink 2s step-end infinite; }
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+.headline {
+  font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--fg);
+  text-decoration: none;
+  text-align: center;
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+  transition: color 180ms ease;
+}
+.headline:hover, .headline:focus-visible { color: #642814; outline: none; }
+
+/* ---- Caption: one line of text along the bottom of a section page ---- */
+/* Pinned to the bottom so it never pulls a centred headline off-centre. */
+.caption {
+  position: fixed;
+  inset: auto 0 0 0;
+  margin: 0;
+  padding: 0 1.5rem 5vh;
+  text-align: center;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  opacity: 0.85;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* ---- Section pages ---- */
+.section {
+  margin: auto;
+  padding: 2rem 1rem 10vh;
+  text-align: center;
+}
+.section h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.section p { margin: 0; color: var(--muted); }
+
+@media (max-width: 600px) {
+  :root { --tile-w: 150px; }
+  .tiles { --tiles-bottom: 6vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile, .tile-card { transition: none; }
+  .tile:hover, .tile:focus-visible { transform: none; }
+}
